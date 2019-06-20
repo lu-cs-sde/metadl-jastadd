@@ -1,0 +1,83 @@
+import java.util.Collections;
+import java.util.HashMap;
+
+aspect MetaGrammar {
+	coll HashMap<String, ASTDecl> Grammar.declsByName() with putAll root Grammar;
+	coll HashSet<String> Grammar.usedDeclsByName() with add root Grammar;
+	coll HashSet<String> Grammar.usedDeclsInListByName() with add root Grammar;
+	ASTDecl contributes Collections.singletonMap(getIdDecl().getID(), this) to Grammar.declsByName();
+
+	inh Grammar TypeDecl.getGrammar();
+	eq Grammar.getTypeDecl().getGrammar() = this;
+
+	syn boolean ASTDecl.isReferred() = getGrammar().usedDeclsByName().contains(getIdDecl().getID());
+	syn boolean ASTDecl.isReferredInList() = getGrammar().usedDeclsInListByName().contains(getIdDecl().getID());
+
+	syn nta IdUse ASTDecl.subsituteId() {
+		if (isReferred()) {
+			if (isReferredInList())
+				return new IdUse("_Meta" + getIdDecl().getID());
+			else
+				return new IdUse("_Element" + getIdDecl().getID());
+		}
+		return null;
+	}
+
+	syn nta ASTDecl ASTDecl.listOrElement() {
+		if (!isReferredInList())
+			return null;
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(new IdDecl("_Meta" + getIdDecl().getID()));
+		return decl;
+	}
+
+	syn nta ASTDecl ASTDecl.metaVar() {
+		if (!isReferred())
+			return null;
+
+		IdDecl id = new IdDecl("_MetaVar" + getIdDecl().getID());
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(id);
+		IdUse superClass = new IdUse("_Element" + getIdDecl().getID());
+		decl.setSuperClass(superClass);
+		return decl;
+	}
+
+	syn nta ASTDecl ASTDecl.abstractElement() {
+		if (!isReferred())
+			return null;
+
+		IdDecl id = new IdDecl("_Element" + getIdDecl().getID());
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(id);
+		decl.setAbstract(new Abstract());
+
+		if (isReferredInList()) {
+			decl.setSuperClass(new IdUse("_Meta" + getIdDecl().getID()));
+		}
+
+		return decl;
+	}
+
+	syn nta ASTDecl ASTDecl.indexMetaVar() {
+		if (!isReferredInList())
+			return null;
+
+		IdDecl id = new IdDecl("_MetaIndex" + getIdDecl().getID());
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(id);
+		decl.setSuperClass(new IdUse("_Meta" + getIdDecl().getID()));
+		decl.addComponent(new AggregateComponent(new Id(new Opt(new NameNode("Element")),
+														new IdUse("_Element" + getIdDecl().getID()))));
+		return decl;
+	}
+
+	syn nta ASTDecl ASTDecl.gap() {
+		if (!isReferredInList())
+			return null;
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(new IdDecl("_Gap" + getIdDecl().getID()));
+		decl.setSuperClass(new IdUse("_Meta" + getIdDecl().getID()));
+		return decl;
+	}
+}
