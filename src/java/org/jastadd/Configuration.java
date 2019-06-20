@@ -408,6 +408,9 @@ public class Configuration {
       .templateVariable("EmptyContainerSingletons")
       .nonStandard();
 
+	ValueOption grammarDumpFile = new ValueOption("dumpgrammar",
+												  "dump grammar files");
+
   /**
    * Indicates if there were unknown command-line options
    */
@@ -515,6 +518,7 @@ public class Configuration {
     allOptions.add(noStaticOption);
     allOptions.add(deterministicOption);
 
+    allOptions.add(grammarDumpFile);
     return allOptions;
   }
 
@@ -1275,7 +1279,7 @@ public class Configuration {
    * @return {@code true} annotations shall be generated.
    */
   public boolean generateAnnotations() {
-    return generateAnnotations.value(); 
+    return generateAnnotations.value();
   }
 
   /**
@@ -1289,4 +1293,14 @@ public class Configuration {
   public boolean concurrentEval() {
     return concurrentOption.value();
   }
+
+  public String dumpGrammarFile() {
+    if (grammarDumpFile.isMatched())
+      if (grammarDumpFile.numValues() != 0)
+        return grammarDumpFile.value();
+      else
+        return "";
+    return null;
+  }
+
 }

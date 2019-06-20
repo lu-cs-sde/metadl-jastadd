@@ -1,0 +1,107 @@
+import java.io.PrintStream;
+
+aspect PrettyPrint {
+	public class PrettyPrinter {
+		public PrintStream out;
+		public PrettyPrinter(PrintStream out) {
+			this.out = out;
+		}
+	}
+
+	public void ASTNode.prettyPrint(PrintStream ps) {
+		// do nothing
+	}
+
+	public void Grammar.prettyPrint(PrintStream ps) {
+		for (TypeDecl d : getTypeDecls()) {
+			d.prettyPrint(ps);
+			ps.println();
+		}
+	}
+
+	public void ASTDecl.prettyPrint(PrintStream ps) {
+		if (hasAbstract()) {
+			getAbstract().prettyPrint(ps);
+			ps.print(' ');
+		}
+		if (getIdDecl().getID().equals("ASTNode") ||
+			getIdDecl().getID().equals("List") ||
+			getIdDecl().getID().equals("Opt"))
+			return;
+		getIdDecl().prettyPrint(ps);
+		if (hasSuperClass() && !getSuperClass().getID().equals("ASTNode")) {
+			ps.print(":");
+			getSuperClass().prettyPrint(ps);
+		}
+		if (getNumComponent() != 0) {
+			ps.print(" ::= ");
+			for (Component c : getComponents()) {
+				c.prettyPrint(ps);
+				ps.print(' ');
+			}
+		}
+	}
+
+	public void Abstract.prettyPrint(PrintStream ps) {
+		ps.print("abstract");
+	}
+
+	public void IdDecl.prettyPrint(PrintStream ps) {
+		ps.print(getID());
+	}
+
+	public void IdUse.prettyPrint(PrintStream ps) {
+		ps.print(getID());
+	}
+
+	public void ListComponent.prettyPrint(PrintStream ps) {
+		getId().prettyPrint(ps);
+		ps.print("*");
+	}
+
+	public void ListComponentNTA.prettyPrint(PrintStream ps) {
+		ps.print("/");
+		super.prettyPrint(ps);
+		ps.print("/");
+	}
+
+	public void OptionalComponent.prettyPrint(PrintStream ps) {
+		ps.print('[');
+		getId().prettyPrint(ps);
+		ps.print(']');
+	}
+
+	public void OptionalComponentNTA.prettyPrint(PrintStream ps) {
+		ps.print('/');
+		super.prettyPrint(ps);
+		ps.print('/');
+	}
+
+	public void TokenComponent.prettyPrint(PrintStream ps) {
+		ps.print("<");
+		getId().prettyPrint(ps);
+		ps.print(">");
+	}
+
+	public void AggregateComponent.prettyPrint(PrintStream ps) {
+		getId().prettyPrint(ps);
+	}
+
+	public void AggregateComponentNTA.prettyPrint(PrintStream ps) {
+		ps.print('/');
+		super.prettyPrint(ps);
+		ps.print('/');
+	}
+
+	public void Id.prettyPrint(PrintStream ps) {
+		if (hasNameNode()) {
+			getNameNode().prettyPrint(ps);
+			ps.print(":");
+		}
+		getIdUse().prettyPrint(ps);
+	}
+
+	public void NameNode.prettyPrint(PrintStream ps) {
+		ps.print(getID());
+	}
+}
