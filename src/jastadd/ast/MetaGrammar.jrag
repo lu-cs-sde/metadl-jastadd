@@ -9,18 +9,34 @@ aspect MetaGrammar {
 
 	inh Grammar TypeDecl.getGrammar();
 	eq Grammar.getTypeDecl().getGrammar() = this;
+	inh Grammar Id.getGrammar();
 
 	syn boolean ASTDecl.isReferred() = getGrammar().usedDeclsByName().contains(getIdDecl().getID());
 	syn boolean ASTDecl.isReferredInList() = getGrammar().usedDeclsInListByName().contains(getIdDecl().getID());
+	AggregateComponent contributes this.getId().getIdUse().getID()
+		when !(this instanceof AggregateComponentNTA)
+		to Grammar.usedDeclsByName();
+	ListComponent contributes this.getId().getIdUse().getID()
+		when !(this instanceof ListComponentNTA)
+		to Grammar.usedDeclsByName();
+	ListComponent contributes this.getId().getIdUse().getID()
+		when !(this instanceof ListComponentNTA)
+		to Grammar.usedDeclsInListByName();
+	// TODO: handle optionals
 
-	syn nta IdUse ASTDecl.subsituteId() {
-		if (isReferred()) {
-			if (isReferredInList())
-				return new IdUse("_Meta" + getIdDecl().getID());
-			else
-				return new IdUse("_Element" + getIdDecl().getID());
-		}
-		return null;
+	syn nta IdUse ASTDecl.subsituteSuperClass() {
+		if (isReferredInList())
+			return new IdUse("_Meta" + getIdDecl().getID());
+		else
+			return new IdUse("_Element" + getIdDecl().getID());
+	}
+
+	syn IdUse ASTDecl.superClassOrSubstitute() {
+		if (isReferred())
+			return subsituteSuperClass();
+		if (!hasSuperClass())
+			return null;
+		return getSuperClass();
 	}
 
 	syn nta ASTDecl ASTDecl.listOrElement() {
@@ -28,6 +44,7 @@ aspect MetaGrammar {
 			return null;
 		ASTDecl decl = new ASTDecl();
 		decl.setIdDecl(new IdDecl("_Meta" + getIdDecl().getID()));
+		decl.setAbstract(new Abstract());
 		return decl;
 	}
 
@@ -54,6 +71,8 @@ aspect MetaGrammar {
 
 		if (isReferredInList()) {
 			decl.setSuperClass(new IdUse("_Meta" + getIdDecl().getID()));
+		} else if (hasSuperClass()) {
+			decl.setSuperClass(getSuperClass().treeCopyNoTransform());
 		}
 
 		return decl;

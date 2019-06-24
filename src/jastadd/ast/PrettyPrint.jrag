@@ -20,6 +20,21 @@ aspect PrettyPrint {
 	}
 
 	public void ASTDecl.prettyPrint(PrintStream ps) {
+		if (isReferredInList()) {
+			listOrElement().prettyPrint(ps);
+			ps.println();
+			gap().prettyPrint(ps);
+			ps.println();
+			indexMetaVar().prettyPrint(ps);
+			ps.println();
+		}
+		if (isReferred()) {
+			abstractElement().prettyPrint(ps);
+			ps.println();
+			metaVar().prettyPrint(ps);
+			ps.println();
+		}
+
 		if (hasAbstract()) {
 			getAbstract().prettyPrint(ps);
 			ps.print(' ');
@@ -29,9 +44,10 @@ aspect PrettyPrint {
 			getIdDecl().getID().equals("Opt"))
 			return;
 		getIdDecl().prettyPrint(ps);
-		if (hasSuperClass() && !getSuperClass().getID().equals("ASTNode")) {
-			ps.print(":");
-			getSuperClass().prettyPrint(ps);
+		if (superClassOrSubstitute() != null
+			&& !superClassOrSubstitute().getID().equals("ASTNode")) {
+			ps.print(" : ");
+			superClassOrSubstitute().prettyPrint(ps);
 		}
 		if (getNumComponent() != 0) {
 			ps.print(" ::= ");
@@ -40,6 +56,7 @@ aspect PrettyPrint {
 				ps.print(' ');
 			}
 		}
+		ps.print(";");
 	}
 
 	public void Abstract.prettyPrint(PrintStream ps) {
@@ -98,7 +115,11 @@ aspect PrettyPrint {
 			getNameNode().prettyPrint(ps);
 			ps.print(":");
 		}
-		getIdUse().prettyPrint(ps);
+		ASTDecl decl = getGrammar().declsByName().get(getIdUse().getID());
+		if (decl != null)
+			decl.subsituteSuperClass().prettyPrint(ps);
+		else
+			getIdUse().prettyPrint(ps);
 	}
 
 	public void NameNode.prettyPrint(PrintStream ps) {
