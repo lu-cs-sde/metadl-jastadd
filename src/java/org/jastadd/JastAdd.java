@@ -227,12 +227,12 @@ public class JastAdd {
 
       grammar.jastAddGen(config.getPublicModifier());
 
-      if (config.dumpGrammarFile() != null) {
-        if (config.dumpGrammarFile().equals(""))
-          grammar.prettyPrint(System.out);
+      if (config.generateGrammarFile() != null) {
+        if (config.generateGrammarFile().equals(""))
+          grammar.prettyPrintPatternGrammar(System.out);
         else {
-          File gdumpFile = new File(config.dumpGrammarFile());
-          grammar.prettyPrint(new PrintStream(gdumpFile));
+          File gdumpFile = new File(config.generateGrammarFile());
+          grammar.prettyPrintPatternGrammar(new PrintStream(gdumpFile));
         }
 
       }

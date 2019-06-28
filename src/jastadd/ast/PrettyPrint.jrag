@@ -12,6 +12,16 @@ aspect PrettyPrint {
 		// do nothing
 	}
 
+	public void Grammar.prettyPrintPatternGrammar(PrintStream ps) {
+		ps.println("// Original grammar");
+		prettyPrint(ps);
+		ps.println("// Pattern grammar");
+		for (TypeDecl d : patternLangASTDecls()) {
+			d.prettyPrint(ps);
+			ps.println();
+		}
+	}
+
 	public void Grammar.prettyPrint(PrintStream ps) {
 		for (TypeDecl d : getTypeDecls()) {
 			d.prettyPrint(ps);
@@ -20,21 +30,6 @@ aspect PrettyPrint {
 	}
 
 	public void ASTDecl.prettyPrint(PrintStream ps) {
-		if (isReferredInList()) {
-			listOrElement().prettyPrint(ps);
-			ps.println();
-			gap().prettyPrint(ps);
-			ps.println();
-			indexMetaVar().prettyPrint(ps);
-			ps.println();
-		}
-		if (isReferred()) {
-			abstractElement().prettyPrint(ps);
-			ps.println();
-			metaVar().prettyPrint(ps);
-			ps.println();
-		}
-
 		if (hasAbstract()) {
 			getAbstract().prettyPrint(ps);
 			ps.print(' ');
@@ -44,10 +39,10 @@ aspect PrettyPrint {
 			getIdDecl().getID().equals("Opt"))
 			return;
 		getIdDecl().prettyPrint(ps);
-		if (superClassOrSubstitute() != null
-			&& !superClassOrSubstitute().getID().equals("ASTNode")) {
+		if (hasSuperClass() &&
+			!getSuperClass().getID().equals("ASTNode")) {
 			ps.print(" : ");
-			superClassOrSubstitute().prettyPrint(ps);
+			getSuperClass().prettyPrint(ps);
 		}
 		if (getNumComponent() != 0) {
 			ps.print(" ::= ");
@@ -115,11 +110,7 @@ aspect PrettyPrint {
 			getNameNode().prettyPrint(ps);
 			ps.print(":");
 		}
-		ASTDecl decl = getGrammar().declsByName().get(getIdUse().getID());
-		if (decl != null)
-			decl.subsituteSuperClass().prettyPrint(ps);
-		else
-			getIdUse().prettyPrint(ps);
+		getIdUse().prettyPrint(ps);
 	}
 
 	public void NameNode.prettyPrint(PrintStream ps) {

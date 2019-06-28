@@ -11,6 +11,138 @@ aspect MetaGrammar {
 	eq Grammar.getTypeDecl().getGrammar() = this;
 	inh Grammar Id.getGrammar();
 
+	syn nta List<ASTDecl> Grammar.patternLangASTDecls() {
+		List<ASTDecl> typeDecls = new List<ASTDecl>();
+
+		typeDecls.add(ASTDecl.genMetaVariable());
+
+		for (TypeDecl d : getTypeDecls()) {
+			if (!(d instanceof ASTDecl))
+				continue;
+
+			ASTDecl astD = (ASTDecl) d;
+			if (astD.getIdDecl().getID().equals("ASTNode"))
+				continue;
+
+			typeDecls.add(astD.genMetaOrConcreteClass());
+			typeDecls.add(astD.genMetaVarClass());
+			typeDecls.add(astD.genMetaElementClass());
+			typeDecls.add(astD.genGapClass());
+			typeDecls.add(astD.genConcreteClass());
+		}
+
+		return typeDecls;
+	}
+
+	public abstract Id Component.getId();
+
+	public static String ASTDecl.META_OR_CONCRETE = "MetaOrConcrete";
+	public static String ASTDecl.METAELEMENT = "MetaElement";
+	public static String ASTDecl.CONCRETE = "Concrete";
+	public static String ASTDecl.GAP = "Gap";
+	public static String ASTDecl.METAVARIABLE = "MetaVar";
+	public static String ASTDecl.INDEX_METAVARIABLE = "IndexMetaVar";
+
+	public Id Id.metaId() {
+		Id id = new Id();
+		if (hasNameNode())
+			id.setNameNode(getNameNode().treeCopyNoTransform());
+		id.setIdUse(new IdUse(ASTDecl.META_OR_CONCRETE + getIdUse().getID()));
+		return id;
+	}
+
+	public ASTDecl ASTDecl.genMetaOrConcreteClass() {
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(new IdDecl(META_OR_CONCRETE + getIdDecl().getID()));
+		decl.setAbstract(new Abstract());
+		if (hasSuperClass() && !getSuperClass().getID().equals("ASTNode")) {
+			String superClassName = getSuperClass().getID();
+			decl.setSuperClass(new IdUse(META_OR_CONCRETE + superClassName));
+		}
+
+		for (Component c : getComponents()) {
+			if (c instanceof ListComponent
+				&& !(c instanceof ListComponentNTA)) {
+				decl.addComponent(new ListComponent(c.getId().metaId()));
+			} else if (c instanceof OptionalComponent
+					   && !(c instanceof OptionalComponentNTA)) {
+				decl.addComponent(new OptionalComponent(c.getId().metaId()));
+			} else if (c instanceof AggregateComponent
+					   && !(c instanceof AggregateComponentNTA)) {
+				decl.addComponent(new AggregateComponent(c.getId().metaId()));
+			} else {
+				// discard NTA components
+				// newAstDecl.addComponent(c.treeCopyNoTransform());
+			}
+		}
+		return decl;
+	}
+
+	public static ASTDecl ASTDecl.genMetaVariable() {
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(new IdDecl("MetaVariable"));
+		decl.addComponent(new TokenComponent(new Id(new Opt(new NameNode("ID")),
+													new IdUse("String"))));
+		return decl;
+	}
+
+	public ASTDecl ASTDecl.genMetaVarClass() {
+		IdDecl id = new IdDecl(METAVARIABLE + getIdDecl().getID());
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(id);
+		IdUse superClass = new IdUse(METAELEMENT + getIdDecl().getID());
+		decl.setSuperClass(superClass);
+		AggregateComponent metaVar = new AggregateComponent();
+		metaVar.setId(new Id(new Opt(new NameNode("Var")),
+							 new IdUse("MetaVariable")));
+		decl.addComponent(metaVar);
+		return decl;
+	}
+
+	public ASTDecl ASTDecl.genMetaElementClass() {
+		IdDecl id = new IdDecl(METAELEMENT + getIdDecl().getID());
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(id);
+		decl.setAbstract(new Abstract());
+		decl.setSuperClass(new IdUse(META_OR_CONCRETE + getIdDecl().getID()));
+		return decl;
+	}
+
+	public ASTDecl ASTDecl.genIndexMetaVarClass() {
+		IdDecl id = new IdDecl(INDEX_METAVARIABLE + getIdDecl().getID());
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(id);
+		decl.setSuperClass(new IdUse(META_OR_CONCRETE + getIdDecl().getID()));
+
+		AggregateComponent metaVar = new AggregateComponent();
+		metaVar.setId(new Id(new Opt(new NameNode("Var")),
+							 new IdUse("MetaVariable")));
+		decl.addComponent(metaVar);
+
+		decl.addComponent(new AggregateComponent(new Id(new Opt(new NameNode("Element")),
+														new IdUse(METAELEMENT + getIdDecl().getID()))));
+		return decl;
+	}
+
+	public ASTDecl ASTDecl.genConcreteClass() {
+		IdDecl id = new IdDecl(CONCRETE + getIdDecl().getID());
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(id);
+		decl.setSuperClass(new IdUse(METAELEMENT + getIdDecl().getID()));
+		decl.addComponent(new AggregateComponent(new Id(new Opt(new NameNode("ConcreteNode")),
+														new IdUse(getIdDecl().getID()))));
+
+		return decl;
+	}
+
+	public ASTDecl ASTDecl.genGapClass() {
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(new IdDecl(GAP + getIdDecl().getID()));
+		decl.setSuperClass(new IdUse(META_OR_CONCRETE + getIdDecl().getID()));
+		return decl;
+	}
+
+
 	syn boolean ASTDecl.isReferred() = getGrammar().usedDeclsByName().contains(getIdDecl().getID());
 	syn boolean ASTDecl.isReferredInList() = getGrammar().usedDeclsInListByName().contains(getIdDecl().getID());
 	AggregateComponent contributes this.getId().getIdUse().getID()
@@ -22,81 +154,4 @@ aspect MetaGrammar {
 	ListComponent contributes this.getId().getIdUse().getID()
 		when !(this instanceof ListComponentNTA)
 		to Grammar.usedDeclsInListByName();
-	// TODO: handle optionals
-
-	syn nta IdUse ASTDecl.subsituteSuperClass() {
-		if (isReferredInList())
-			return new IdUse("_Meta" + getIdDecl().getID());
-		else
-			return new IdUse("_Element" + getIdDecl().getID());
-	}
-
-	syn IdUse ASTDecl.superClassOrSubstitute() {
-		if (isReferred())
-			return subsituteSuperClass();
-		if (!hasSuperClass())
-			return null;
-		return getSuperClass();
-	}
-
-	syn nta ASTDecl ASTDecl.listOrElement() {
-		if (!isReferredInList())
-			return null;
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl("_Meta" + getIdDecl().getID()));
-		decl.setAbstract(new Abstract());
-		return decl;
-	}
-
-	syn nta ASTDecl ASTDecl.metaVar() {
-		if (!isReferred())
-			return null;
-
-		IdDecl id = new IdDecl("_MetaVar" + getIdDecl().getID());
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(id);
-		IdUse superClass = new IdUse("_Element" + getIdDecl().getID());
-		decl.setSuperClass(superClass);
-		return decl;
-	}
-
-	syn nta ASTDecl ASTDecl.abstractElement() {
-		if (!isReferred())
-			return null;
-
-		IdDecl id = new IdDecl("_Element" + getIdDecl().getID());
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(id);
-		decl.setAbstract(new Abstract());
-
-		if (isReferredInList()) {
-			decl.setSuperClass(new IdUse("_Meta" + getIdDecl().getID()));
-		} else if (hasSuperClass()) {
-			decl.setSuperClass(getSuperClass().treeCopyNoTransform());
-		}
-
-		return decl;
-	}
-
-	syn nta ASTDecl ASTDecl.indexMetaVar() {
-		if (!isReferredInList())
-			return null;
-
-		IdDecl id = new IdDecl("_MetaIndex" + getIdDecl().getID());
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(id);
-		decl.setSuperClass(new IdUse("_Meta" + getIdDecl().getID()));
-		decl.addComponent(new AggregateComponent(new Id(new Opt(new NameNode("Element")),
-														new IdUse("_Element" + getIdDecl().getID()))));
-		return decl;
-	}
-
-	syn nta ASTDecl ASTDecl.gap() {
-		if (!isReferredInList())
-			return null;
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl("_Gap" + getIdDecl().getID()));
-		decl.setSuperClass(new IdUse("_Meta" + getIdDecl().getID()));
-		return decl;
-	}
 }

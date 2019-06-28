@@ -408,8 +408,8 @@ public class Configuration {
       .templateVariable("EmptyContainerSingletons")
       .nonStandard();
 
-	ValueOption grammarDumpFile = new ValueOption("dumpgrammar",
-												  "dump grammar files");
+	ValueOption generatePatternGrammar = new ValueOption("pattern_grammar",
+												  "generate pattern grammar");
 
   /**
    * Indicates if there were unknown command-line options
@@ -518,7 +518,7 @@ public class Configuration {
     allOptions.add(noStaticOption);
     allOptions.add(deterministicOption);
 
-    allOptions.add(grammarDumpFile);
+    allOptions.add(generatePatternGrammar);
     return allOptions;
   }
 
@@ -1294,10 +1294,10 @@ public class Configuration {
     return concurrentOption.value();
   }
 
-  public String dumpGrammarFile() {
-    if (grammarDumpFile.isMatched())
-      if (grammarDumpFile.numValues() != 0)
-        return grammarDumpFile.value();
+  public String generateGrammarFile() {
+    if (generatePatternGrammar.isMatched())
+      if (generatePatternGrammar.numValues() != 0)
+        return generatePatternGrammar.value();
       else
         return "";
     return null;
