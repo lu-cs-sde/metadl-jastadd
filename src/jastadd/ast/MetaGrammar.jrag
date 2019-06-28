@@ -21,9 +21,12 @@ aspect MetaGrammar {
 				continue;
 
 			ASTDecl astD = (ASTDecl) d;
-			if (astD.getIdDecl().getID().equals("ASTNode"))
+			if (astD.getIdDecl().getID().equals("ASTNode") ||
+				astD.getIdDecl().getID().equals("Opt") ||
+				astD.getIdDecl().getID().equals("List"))
 				continue;
 
+			typeDecls.add(astD.genModifiedDecl());
 			typeDecls.add(astD.genMetaOrConcreteClass());
 			typeDecls.add(astD.genMetaVarClass());
 			typeDecls.add(astD.genMetaElementClass());
@@ -51,14 +54,16 @@ aspect MetaGrammar {
 		return id;
 	}
 
-	public ASTDecl ASTDecl.genMetaOrConcreteClass() {
+	// Generate a modified declaration where all the
+	// components are refering to the meta-or-concrete correspondents
+	// of the original components
+	public ASTDecl ASTDecl.genModifiedDecl() {
 		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl(META_OR_CONCRETE + getIdDecl().getID()));
-		decl.setAbstract(new Abstract());
-		if (hasSuperClass() && !getSuperClass().getID().equals("ASTNode")) {
-			String superClassName = getSuperClass().getID();
-			decl.setSuperClass(new IdUse(META_OR_CONCRETE + superClassName));
-		}
+		decl.setIdDecl(getIdDecl().treeCopyNoTransform());
+		if (hasAbstract())
+			decl.setAbstract(new Abstract());
+		if (hasSuperClass())
+			decl.setSuperClass(getSuperClass().treeCopyNoTransform());
 
 		for (Component c : getComponents()) {
 			if (c instanceof ListComponent
@@ -75,6 +80,33 @@ aspect MetaGrammar {
 				// newAstDecl.addComponent(c.treeCopyNoTransform());
 			}
 		}
+		return decl;
+	}
+
+	public ASTDecl ASTDecl.genMetaOrConcreteClass() {
+		ASTDecl decl = new ASTDecl();
+		decl.setIdDecl(new IdDecl(META_OR_CONCRETE + getIdDecl().getID()));
+		decl.setAbstract(new Abstract());
+		// if (hasSuperClass() && !getSuperClass().getID().equals("ASTNode")) {
+		// 	String superClassName = getSuperClass().getID();
+		// 	decl.setSuperClass(new IdUse(META_OR_CONCRETE + superClassName));
+		// }
+
+		// for (Component c : getComponents()) {
+		// 	if (c instanceof ListComponent
+		// 		&& !(c instanceof ListComponentNTA)) {
+		// 		decl.addComponent(new ListComponent(c.getId().metaId()));
+		// 	} else if (c instanceof OptionalComponent
+		// 			   && !(c instanceof OptionalComponentNTA)) {
+		// 		decl.addComponent(new OptionalComponent(c.getId().metaId()));
+		// 	} else if (c instanceof AggregateComponent
+		// 			   && !(c instanceof AggregateComponentNTA)) {
+		// 		decl.addComponent(new AggregateComponent(c.getId().metaId()));
+		// 	} else {
+		// 		// discard NTA components
+		// 		// newAstDecl.addComponent(c.treeCopyNoTransform());
+		// 	}
+		// }
 		return decl;
 	}
 
