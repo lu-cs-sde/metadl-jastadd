@@ -11,6 +11,35 @@ aspect MetaGrammar {
 	eq Grammar.getTypeDecl().getGrammar() = this;
 	inh Grammar Id.getGrammar();
 
+	public void Grammar.transformToPatternGrammar() {
+		List<TypeDecl> typeDecls = new List<TypeDecl>();
+
+		typeDecls.add(ASTDecl.genMetaVariable());
+		for (TypeDecl d : getTypeDecls()) {
+			if (!(d instanceof ASTDecl)) {
+				typeDecls.add(d.treeCopyNoTransform());
+				continue;
+			}
+
+			ASTDecl astD = (ASTDecl) d;
+			if (astD.getIdDecl().getID().equals("ASTNode") ||
+				astD.getIdDecl().getID().equals("Opt") ||
+				astD.getIdDecl().getID().equals("List")) {
+				typeDecls.add(d.treeCopyNoTransform());
+				continue;
+			}
+
+			typeDecls.add(astD.genModifiedDecl());
+			typeDecls.add(astD.genMetaOrConcreteClass());
+			typeDecls.add(astD.genMetaVarClass());
+			typeDecls.add(astD.genMetaElementClass());
+			typeDecls.add(astD.genGapClass());
+			typeDecls.add(astD.genConcreteClass());
+		}
+
+		setTypeDeclList(typeDecls);
+	}
+
 	syn nta List<ASTDecl> Grammar.patternLangASTDecls() {
 		List<ASTDecl> typeDecls = new List<ASTDecl>();
 
@@ -75,6 +104,9 @@ aspect MetaGrammar {
 			} else if (c instanceof AggregateComponent
 					   && !(c instanceof AggregateComponentNTA)) {
 				decl.addComponent(new AggregateComponent(c.getId().metaId()));
+			} else if (c instanceof TokenComponent
+					   && !(c instanceof TokenComponentNTA)) {
+				decl.addComponent(new TokenComponent(c.getId()));
 			} else {
 				// discard NTA components
 				// newAstDecl.addComponent(c.treeCopyNoTransform());
@@ -87,26 +119,6 @@ aspect MetaGrammar {
 		ASTDecl decl = new ASTDecl();
 		decl.setIdDecl(new IdDecl(META_OR_CONCRETE + getIdDecl().getID()));
 		decl.setAbstract(new Abstract());
-		// if (hasSuperClass() && !getSuperClass().getID().equals("ASTNode")) {
-		// 	String superClassName = getSuperClass().getID();
-		// 	decl.setSuperClass(new IdUse(META_OR_CONCRETE + superClassName));
-		// }
-
-		// for (Component c : getComponents()) {
-		// 	if (c instanceof ListComponent
-		// 		&& !(c instanceof ListComponentNTA)) {
-		// 		decl.addComponent(new ListComponent(c.getId().metaId()));
-		// 	} else if (c instanceof OptionalComponent
-		// 			   && !(c instanceof OptionalComponentNTA)) {
-		// 		decl.addComponent(new OptionalComponent(c.getId().metaId()));
-		// 	} else if (c instanceof AggregateComponent
-		// 			   && !(c instanceof AggregateComponentNTA)) {
-		// 		decl.addComponent(new AggregateComponent(c.getId().metaId()));
-		// 	} else {
-		// 		// discard NTA components
-		// 		// newAstDecl.addComponent(c.treeCopyNoTransform());
-		// 	}
-		// }
 		return decl;
 	}
 

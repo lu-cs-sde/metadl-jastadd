@@ -167,6 +167,10 @@ public class JastAdd {
         return 1;
       }
 
+	  if (config.generatePatternGrammarFile() != null) {
+		grammar.transformToPatternGrammar();
+	  }
+
       if (config.shouldGenerateDotGraph()) {
         // Generate Dot graph for the grammar, then exit.
         grammar.genDotGraph(out);
@@ -227,14 +231,13 @@ public class JastAdd {
 
       grammar.jastAddGen(config.getPublicModifier());
 
-      if (config.generateGrammarFile() != null) {
-        if (config.generateGrammarFile().equals(""))
-          grammar.prettyPrintPatternGrammar(System.out);
-        else {
-          File gdumpFile = new File(config.generateGrammarFile());
-          grammar.prettyPrintPatternGrammar(new PrintStream(gdumpFile));
+      if (config.generatePatternGrammarFile() != null) {
+        if (config.generatePatternGrammarFile().equals("")) {
+          grammar.prettyPrint(System.out);
+        } else {
+          File gdumpFile = new File(config.generatePatternGrammarFile());
+          grammar.prettyPrint(new PrintStream(gdumpFile));
         }
-
       }
 
       if (config.shouldWriteStatistics()) {

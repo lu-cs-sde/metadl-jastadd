@@ -1294,7 +1294,7 @@ public class Configuration {
     return concurrentOption.value();
   }
 
-  public String generateGrammarFile() {
+  public String generatePatternGrammarFile() {
     if (generatePatternGrammar.isMatched())
       if (generatePatternGrammar.numValues() != 0)
         return generatePatternGrammar.value();
