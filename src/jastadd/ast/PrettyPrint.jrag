@@ -12,14 +12,6 @@ aspect PrettyPrint {
 		// do nothing
 	}
 
-	public void Grammar.prettyPrintPatternGrammar(PrintStream ps) {
-		ps.println("// Pattern grammar");
-		for (TypeDecl d : patternLangASTDecls()) {
-			d.prettyPrint(ps);
-			ps.println();
-		}
-	}
-
 	public void Grammar.prettyPrint(PrintStream ps) {
 		for (TypeDecl d : getTypeDecls()) {
 			d.prettyPrint(ps);

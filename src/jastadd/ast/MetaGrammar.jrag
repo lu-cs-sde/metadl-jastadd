@@ -12,58 +12,32 @@ aspect MetaGrammar {
 	inh Grammar Id.getGrammar();
 
 	public void Grammar.transformToPatternGrammar() {
-		List<TypeDecl> typeDecls = new List<TypeDecl>();
-
-		typeDecls.add(ASTDecl.genMetaVariable());
-		for (TypeDecl d : getTypeDecls()) {
-			if (!(d instanceof ASTDecl)) {
-				typeDecls.add(d.treeCopyNoTransform());
-				continue;
-			}
-
+		java.util.List<TypeDecl> newTypeDecls = new ArrayList<TypeDecl>();
+		newTypeDecls.add(ASTDecl.genMetaVariable());
+		for (TypeDecl d : getTypeDeclsNoTransform()) {
 			ASTDecl astD = (ASTDecl) d;
 			if (astD.getIdDecl().getID().equals("ASTNode") ||
 				astD.getIdDecl().getID().equals("Opt") ||
 				astD.getIdDecl().getID().equals("List")) {
-				typeDecls.add(d.treeCopyNoTransform());
 				continue;
 			}
 
-			typeDecls.add(astD.genModifiedDecl());
-			typeDecls.add(astD.genMetaOrConcreteClass());
-			typeDecls.add(astD.genMetaVarClass());
-			typeDecls.add(astD.genMetaElementClass());
-			typeDecls.add(astD.genGapClass());
-			typeDecls.add(astD.genConcreteClass());
+			LinkedList<Integer> childrenToRemove = new LinkedList<Integer>();
+			for (int i = 0; i <  astD.getNumComponent(); ++i) {
+				if (astD.getComponent(i).isNTA()) {
+					childrenToRemove.addFirst(i);
+				}
+			}
+			for (int i : childrenToRemove) {
+				astD.getComponentsNoTransform().removeChild(i);
+			}
+
+			newTypeDecls.add(astD.genMetaVarClass());
+			newTypeDecls.add(astD.genIndexMetaVarClass());
+			newTypeDecls.add(astD.genGapClass());
 		}
 
-		setTypeDeclList(typeDecls);
-	}
-
-	syn nta List<ASTDecl> Grammar.patternLangASTDecls() {
-		List<ASTDecl> typeDecls = new List<ASTDecl>();
-
-		typeDecls.add(ASTDecl.genMetaVariable());
-
-		for (TypeDecl d : getTypeDecls()) {
-			if (!(d instanceof ASTDecl))
-				continue;
-
-			ASTDecl astD = (ASTDecl) d;
-			if (astD.getIdDecl().getID().equals("ASTNode") ||
-				astD.getIdDecl().getID().equals("Opt") ||
-				astD.getIdDecl().getID().equals("List"))
-				continue;
-
-			typeDecls.add(astD.genModifiedDecl());
-			typeDecls.add(astD.genMetaOrConcreteClass());
-			typeDecls.add(astD.genMetaVarClass());
-			typeDecls.add(astD.genMetaElementClass());
-			typeDecls.add(astD.genGapClass());
-			typeDecls.add(astD.genConcreteClass());
-		}
-
-		return typeDecls;
+		getTypeDeclsNoTransform().addAll(newTypeDecls);
 	}
 
 	public abstract Id Component.getId();
@@ -134,7 +108,7 @@ aspect MetaGrammar {
 		IdDecl id = new IdDecl(METAVARIABLE + getIdDecl().getID());
 		ASTDecl decl = new ASTDecl();
 		decl.setIdDecl(id);
-		IdUse superClass = new IdUse(METAELEMENT + getIdDecl().getID());
+		IdUse superClass = new IdUse(getIdDecl().getID());
 		decl.setSuperClass(superClass);
 		AggregateComponent metaVar = new AggregateComponent();
 		metaVar.setId(new Id(new Opt(new NameNode("Var")),
@@ -148,7 +122,7 @@ aspect MetaGrammar {
 		ASTDecl decl = new ASTDecl();
 		decl.setIdDecl(id);
 		decl.setAbstract(new Abstract());
-		decl.setSuperClass(new IdUse(META_OR_CONCRETE + getIdDecl().getID()));
+		decl.setSuperClass(new IdUse(getIdDecl().getID()));
 		return decl;
 	}
 
@@ -156,7 +130,7 @@ aspect MetaGrammar {
 		IdDecl id = new IdDecl(INDEX_METAVARIABLE + getIdDecl().getID());
 		ASTDecl decl = new ASTDecl();
 		decl.setIdDecl(id);
-		decl.setSuperClass(new IdUse(META_OR_CONCRETE + getIdDecl().getID()));
+		decl.setSuperClass(new IdUse(getIdDecl().getID()));
 
 		AggregateComponent metaVar = new AggregateComponent();
 		metaVar.setId(new Id(new Opt(new NameNode("Var")),
@@ -164,7 +138,7 @@ aspect MetaGrammar {
 		decl.addComponent(metaVar);
 
 		decl.addComponent(new AggregateComponent(new Id(new Opt(new NameNode("Element")),
-														new IdUse(METAELEMENT + getIdDecl().getID()))));
+														new IdUse(getIdDecl().getID()))));
 		return decl;
 	}
 
@@ -182,7 +156,7 @@ aspect MetaGrammar {
 	public ASTDecl ASTDecl.genGapClass() {
 		ASTDecl decl = new ASTDecl();
 		decl.setIdDecl(new IdDecl(GAP + getIdDecl().getID()));
-		decl.setSuperClass(new IdUse(META_OR_CONCRETE + getIdDecl().getID()));
+		decl.setSuperClass(new IdUse(getIdDecl().getID()));
 		return decl;
 	}
 
