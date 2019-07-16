@@ -22,16 +22,6 @@ aspect MetaGrammar {
 				continue;
 			}
 
-			LinkedList<Integer> childrenToRemove = new LinkedList<Integer>();
-			for (int i = 0; i <  astD.getNumComponent(); ++i) {
-				if (astD.getComponent(i).isNTA()) {
-					childrenToRemove.addFirst(i);
-				}
-			}
-			for (int i : childrenToRemove) {
-				astD.getComponentsNoTransform().removeChild(i);
-			}
-
 			newTypeDecls.add(astD.genMetaVarClass());
 			newTypeDecls.add(astD.genIndexMetaVarClass());
 			newTypeDecls.add(astD.genGapClass());
