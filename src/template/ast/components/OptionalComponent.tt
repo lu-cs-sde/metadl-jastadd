@@ -64,6 +64,11 @@ $if(!#isNTA)
     return this;
   }
 
+  $Modifier $Host $Host.set$(Name)Opt($ASTNode opt) {
+    setChild(opt, $Index);
+    return this;
+  }
+
 $endif
 $if(#ntaShadowingNonNTA)
   /**
@@ -83,6 +88,24 @@ $endif
    * @apilevel high-level
    */
   $Modifier $Host $Host.set$Name($Type node) {
+$if(EmptyContainerSingletons)
+  $if(#isNTA)
+    // TODO: should also check if getOpt() is the empty singleton, since we check the _value on return.
+    get$(Name)Opt().setChild(node, 0);
+  $else
+    if (node != null) {
+      setChild(new $Opt(node), $Index);
+    } else {
+      setChild($Opt.EMPTY, $Index);
+    }
+  $endif
+$else
+    get$(Name)Opt().setChild(node, 0);
+$endif
+    return this;
+  }
+
+  $Modifier $Host $Host.set$Name($ASTNode node) {
 $if(EmptyContainerSingletons)
   $if(#isNTA)
     // TODO: should also check if getOpt() is the empty singleton, since we check the _value on return.
