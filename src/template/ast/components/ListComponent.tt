@@ -185,6 +185,7 @@ $endif
     return this;
   }
 
+$if(GenerateGenericMethods)
   $Modifier $Host $Host.set$Name($ASTNode node, int i) {
     $ListType list = get$(Name)List();
 $if(EmptyContainerSingletons)
@@ -198,6 +199,7 @@ $else
 $endif
     return this;
   }
+$endif
 
 $if(#isNTA)
   /**

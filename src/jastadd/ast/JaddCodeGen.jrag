@@ -675,6 +675,10 @@ aspect JaddCodeGen {
     tt.bind("Host", decl.name());
     tt.bind("Modifier", publicModifier ? "public" : "private");
 
+	// Generate generic methods only if the type is not already is ASTNode,
+	// otherwise we'll get two methods with the same signature.
+    tt.bind("GenerateGenericMethods", !getId().type().equals("ASTNode"));
+
     parse(tt.expand("ListComponent"));
   }
 
