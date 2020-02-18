@@ -14,11 +14,6 @@ aspect MetaGrammar {
 	public void Grammar.transformToPatternGrammar() {
 		java.util.List<TypeDecl> newTypeDecls = new ArrayList<TypeDecl>();
 		newTypeDecls.add(ASTDecl.genMetaVariable());
-		newTypeDecls.add(ASTDecl.genGap());
-		newTypeDecls.add(ASTDecl.genMetaOr());
-		newTypeDecls.add(ASTDecl.genMetaSeq());
-		newTypeDecls.add(ASTDecl.genMetaTerminalWrapper());
-
 		for (TypeDecl d : getTypeDeclsNoTransform()) {
 			ASTDecl astD = (ASTDecl) d;
 			if (astD.getIdDecl().getID().equals("ASTNode") ||
@@ -96,34 +91,6 @@ aspect MetaGrammar {
 		decl.setIdDecl(new IdDecl("MetaVariable"));
 		decl.addComponent(new TokenComponent(new Id(new Opt(new NameNode("ID")),
 													new IdUse("String"))));
-		return decl;
-	}
-
-	public static ASTDecl ASTDecl.genMetaTerminalWrapper() {
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl("MetaTerminalWrapper"));
-		decl.addComponent(new TokenComponent(new Id(new Opt(new NameNode("ID")),
-													new IdUse("String"))));
-		return decl;
-	}
-
-	public static ASTDecl ASTDecl.genMetaOr() {
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl("MetaOr"));
-		decl.addComponent(new ListComponent(new Id(new Opt(new NameNode("Operand")), new IdUse("ASTNode"))));
-		return decl;
-	}
-
-	public static ASTDecl ASTDecl.genMetaSeq() {
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl("MetaSeq"));
-		decl.addComponent(new ListComponent(new Id(new Opt(new NameNode("Operand")), new IdUse("ASTNode"))));
-		return decl;
-	}
-
-	public static ASTDecl ASTDecl.genGap() {
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl("Gap"));
 		return decl;
 	}
 
