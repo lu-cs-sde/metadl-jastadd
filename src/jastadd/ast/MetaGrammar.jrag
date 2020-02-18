@@ -104,8 +104,8 @@ aspect MetaGrammar {
 	public static ASTDecl ASTDecl.genMetaTerminalWrapper() {
 		ASTDecl decl = new ASTDecl();
 		decl.setIdDecl(new IdDecl("MetaTerminalWrapper"));
-		decl.addComponent(new TokenComponent(new Id(new Opt(new NameNode("SYM")),
-													new IdUse("beaver.Symbol"))));
+		decl.addComponent(new TokenComponent(new Id(new Opt(new NameNode("ID")),
+													new IdUse("String"))));
 		return decl;
 	}
 

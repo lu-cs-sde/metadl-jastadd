@@ -335,16 +335,16 @@ aspect JaddCodeGen {
       return;
     }
 
-	boolean nonTokenArg = false;
+	boolean stringArg = false;
 	for (Component c : components()) {
-		if (!c.isNTA() && !(c instanceof TokenComponent)) {
-			nonTokenArg = true;
-			break;
+		if (!c.isNTA() && c instanceof TokenComponent && c.constrParmType().equals("String")
+			|| c.constrParmType().equals("java.lang.String")) {
+			stringArg = true;
 		}
 	}
 
 	// Only build constructors if there are other components except tokens
-	if (!nonTokenArg)
+	if (stringArg)
 		return;
 
     if (config().generateAnnotations()){
