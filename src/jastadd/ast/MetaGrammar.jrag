@@ -18,8 +18,6 @@ aspect MetaGrammar {
 		newTypeDecls.add(ASTDecl.genMetaOr());
 		newTypeDecls.add(ASTDecl.genMetaSeq());
 		newTypeDecls.add(ASTDecl.genMetaTerminalWrapper());
-		newTypeDecls.add(ASTDecl.genMetaEpsilon());
-		newTypeDecls.add(ASTDecl.genMetaFinalOr());
 
 		for (TypeDecl d : getTypeDeclsNoTransform()) {
 			ASTDecl astD = (ASTDecl) d;
@@ -116,23 +114,10 @@ aspect MetaGrammar {
 		return decl;
 	}
 
-	public static ASTDecl ASTDecl.genMetaFinalOr() {
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl("MetaFinalOr"));
-		decl.addComponent(new ListComponent(new Id(new Opt(new NameNode("Operand")), new IdUse("ASTNode"))));
-		return decl;
-	}
-
 	public static ASTDecl ASTDecl.genMetaSeq() {
 		ASTDecl decl = new ASTDecl();
 		decl.setIdDecl(new IdDecl("MetaSeq"));
 		decl.addComponent(new ListComponent(new Id(new Opt(new NameNode("Operand")), new IdUse("ASTNode"))));
-		return decl;
-	}
-
-	public static ASTDecl ASTDecl.genMetaEpsilon() {
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl("MetaEpsilon"));
 		return decl;
 	}
 
@@ -141,7 +126,6 @@ aspect MetaGrammar {
 		decl.setIdDecl(new IdDecl("Gap"));
 		return decl;
 	}
-
 
 	public ASTDecl ASTDecl.genMetaVarClass() {
 		IdDecl id = new IdDecl(METAVARIABLE + getIdDecl().getID());
