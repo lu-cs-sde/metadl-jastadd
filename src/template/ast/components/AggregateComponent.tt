@@ -37,10 +37,6 @@ $if(!#isNTA)
     return this;
   }
 
-  public $Host $Host.set$Name($ASTNode node) {
-    setChild(node, $Index);
-    return this;
-  }
 $endif
 $if(#ntaShadowingNonNTA)
   /**
@@ -50,10 +46,6 @@ $if(#ntaShadowingNonNTA)
    * @apilevel internal
    */
   public $Host $Host.set$Name($Type node) {
-    throw new Error("Can not replace NTA child $Name in $Host!");
-  }
-
-  public $Host $Host.set$Name($ASTNode node) {
     throw new Error("Can not replace NTA child $Name in $Host!");
   }
 

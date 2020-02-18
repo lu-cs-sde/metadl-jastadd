@@ -261,7 +261,7 @@ aspect JaddCodeGen {
    */
   private void ASTDecl.emitConstructorAnnotation(PrintWriter out){
     out.println(config().indent + "@ASTNodeAnnotation.Constructor(");
-
+    
     out.print(config().ind(2) + "name = {");
     int paramIndex = 0;
     for (Component c : components()) {
@@ -321,45 +321,6 @@ aspect JaddCodeGen {
       if (!c.isNTA()) {
         if (paramIndex != 0) out.print(", ");
         out.print(c.constrParmType() + " p" + paramIndex);
-        paramIndex++;
-      }
-    }
-    out.println(") {");
-    emitBuildingConstructorBody(out);
-    out.println(config().indent + "}");
-  }
-
-  public void ASTDecl.emitGenericBuildingConstructor(PrintWriter out) {
-    if (components().isEmpty()) {
-      // We only build constructors if there are components.
-      return;
-    }
-
-	boolean stringArg = false;
-	for (Component c : components()) {
-		if (!c.isNTA() && c instanceof TokenComponent && c.constrParmType().equals("String")
-			|| c.constrParmType().equals("java.lang.String")) {
-			stringArg = true;
-		}
-	}
-
-	// Only build constructors if there are other components except tokens
-	if (stringArg)
-		return;
-
-    if (config().generateAnnotations()){
-        emitConstructorAnnotation(out);
-    }
-
-    out.print(config().indent + "public " + name() + "." + name() + "(");
-    int paramIndex = 0;
-    for (Component c : components()) {
-      if (!c.isNTA()) {
-        if (paramIndex != 0) out.print(", ");
-        if (c instanceof TokenComponent)
-			out.print(c.constrParmType() + " p" + paramIndex);
-		else
-			out.print("ASTNode p" + paramIndex);
         paramIndex++;
       }
     }
@@ -575,7 +536,6 @@ aspect JaddCodeGen {
 
     if (numNonNTAComponent() != 0) {
       emitBuildingConstructor(out);
-      emitGenericBuildingConstructor(out);
       if (config().useBeaverSymbol()) {
         emitSymbolConstructor(out);
       }

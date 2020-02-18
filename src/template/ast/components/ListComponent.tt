@@ -73,12 +73,6 @@ $if(!#isNTA)
     return this;
   }
 
-  $Modifier $Host $Host.set$(Name)List($ASTNode list) {
-    setChild(list, $Index);
-    return this;
-  }
-
-
 $endif
 $if(#ntaShadowingNonNTA)
   /**
@@ -172,20 +166,6 @@ $endif
    * @apilevel high-level
    */
   $Modifier $Host $Host.set$Name($Type node, int i) {
-    $ListType list = get$(Name)List();
-$if(EmptyContainerSingletons)
-    if (list == $List.EMPTY) {
-      setChild(new $List(node), $Index);
-    } else {
-      list.setChild(node, i);
-    }
-$else
-    list.setChild(node, i);
-$endif
-    return this;
-  }
-
-  $Modifier $Host $Host.set$Name($ASTNode node, int i) {
     $ListType list = get$(Name)List();
 $if(EmptyContainerSingletons)
     if (list == $List.EMPTY) {
