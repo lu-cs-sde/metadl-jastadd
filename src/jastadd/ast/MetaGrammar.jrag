@@ -162,4 +162,46 @@ aspect MetaGrammar {
 	ListComponent contributes this.getId().getIdUse().getID()
 		when !(this instanceof ListComponentNTA)
 		to Grammar.usedDeclsInListByName();
+
+	public void Grammar.generatePatternGrammarInfo() {
+		File file = targetJavaFile("PatternGrammarInfo");
+		try {
+			PrintStream stream = new PrintStream(new FileOutputStream(file));
+			if ( !config().license.isEmpty()) {
+				stream.println(config().license);
+			}
+
+			if (!config().packageName().isEmpty()) {
+				stream.println("package " + config().packageName() + ";\n");
+			}
+
+			stream.println("public class PatternGrammarInfo {");
+			stream.println("public static String getNodeSuperType(String nodeType) {");
+			stream.println("  switch (nodeType) {");
+			stream.println("  default: return null;");
+			for (TypeDecl d : getTypeDeclsNoTransform()) {
+				ASTDecl astD = (ASTDecl) d;
+				if (!astD.hasSuperClass())
+					continue;
+				stream.println(String.format("  case \"%s\": return \"%s\";", astD.getIdDecl().getID(), astD.getSuperClassName()));
+			}
+			stream.println("}");
+			stream.println("}");
+			stream.println();
+			stream.println("public static java.util.List<String> getNodeType() {");
+			stream.println("return java.util.Arrays.asList(");
+			for (int i = 0; i < getNumTypeDeclNoTransform(); ++i) {
+				if (i != 0)
+					stream.println(",");
+				ASTDecl astD = (ASTDecl) getTypeDeclNoTransform(i);
+				stream.print(String.format("\"%s\"", astD.getIdDecl().getID()));
+			}
+			stream.println(");");
+			stream.println("}");
+			stream.println("}");
+		} catch (FileNotFoundException f) {
+			System.err.println("Could not create file " + file.getName() + " in " + file.getParent());
+			System.exit(1);
+		}
+	}
 }

@@ -168,6 +168,8 @@ public class JastAdd {
       }
 
 	  if (config.generatePatternGrammarFile() != null) {
+		// generate the info before adding the pattern grammar nodes
+		grammar.generatePatternGrammarInfo();
 		grammar.transformToPatternGrammar();
 	  }
 
