@@ -32,59 +32,9 @@ aspect MetaGrammar {
 
 	public abstract Id Component.getId();
 
-	public static String ASTDecl.META_OR_CONCRETE = "MetaOrConcrete";
-	public static String ASTDecl.METAELEMENT = "MetaElement";
-	public static String ASTDecl.CONCRETE = "Concrete";
 	public static String ASTDecl.GAP = "Gap";
 	public static String ASTDecl.METAVARIABLE = "MetaVar";
 	public static String ASTDecl.INDEX_METAVARIABLE = "IndexMetaVar";
-
-	public Id Id.metaId() {
-		Id id = new Id();
-		if (hasNameNode())
-			id.setNameNode(getNameNode().treeCopyNoTransform());
-		id.setIdUse(new IdUse(ASTDecl.META_OR_CONCRETE + getIdUse().getID()));
-		return id;
-	}
-
-	// Generate a modified declaration where all the
-	// components are refering to the meta-or-concrete correspondents
-	// of the original components
-	public ASTDecl ASTDecl.genModifiedDecl() {
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(getIdDecl().treeCopyNoTransform());
-		if (hasAbstract())
-			decl.setAbstract(new Abstract());
-		if (hasSuperClass())
-			decl.setSuperClass(getSuperClass().treeCopyNoTransform());
-
-		for (Component c : getComponents()) {
-			if (c instanceof ListComponent
-				&& !(c instanceof ListComponentNTA)) {
-				decl.addComponent(new ListComponent(c.getId().metaId()));
-			} else if (c instanceof OptionalComponent
-					   && !(c instanceof OptionalComponentNTA)) {
-				decl.addComponent(new OptionalComponent(c.getId().metaId()));
-			} else if (c instanceof AggregateComponent
-					   && !(c instanceof AggregateComponentNTA)) {
-				decl.addComponent(new AggregateComponent(c.getId().metaId()));
-			} else if (c instanceof TokenComponent
-					   && !(c instanceof TokenComponentNTA)) {
-				decl.addComponent(new TokenComponent(c.getId()));
-			} else {
-				// discard NTA components
-				// newAstDecl.addComponent(c.treeCopyNoTransform());
-			}
-		}
-		return decl;
-	}
-
-	public ASTDecl ASTDecl.genMetaOrConcreteClass() {
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(new IdDecl(META_OR_CONCRETE + getIdDecl().getID()));
-		decl.setAbstract(new Abstract());
-		return decl;
-	}
 
 	public static ASTDecl ASTDecl.genMetaVariable() {
 		ASTDecl decl = new ASTDecl();
@@ -107,15 +57,6 @@ aspect MetaGrammar {
 		return decl;
 	}
 
-	public ASTDecl ASTDecl.genMetaElementClass() {
-		IdDecl id = new IdDecl(METAELEMENT + getIdDecl().getID());
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(id);
-		decl.setAbstract(new Abstract());
-		decl.setSuperClass(new IdUse(getIdDecl().getID()));
-		return decl;
-	}
-
 	public ASTDecl ASTDecl.genIndexMetaVarClass() {
 		IdDecl id = new IdDecl(INDEX_METAVARIABLE + getIdDecl().getID());
 		ASTDecl decl = new ASTDecl();
@@ -129,17 +70,6 @@ aspect MetaGrammar {
 
 		decl.addComponent(new AggregateComponent(new Id(new Opt(new NameNode("Element")),
 														new IdUse(getIdDecl().getID()))));
-		return decl;
-	}
-
-	public ASTDecl ASTDecl.genConcreteClass() {
-		IdDecl id = new IdDecl(CONCRETE + getIdDecl().getID());
-		ASTDecl decl = new ASTDecl();
-		decl.setIdDecl(id);
-		decl.setSuperClass(new IdUse(METAELEMENT + getIdDecl().getID()));
-		decl.addComponent(new AggregateComponent(new Id(new Opt(new NameNode("ConcreteNode")),
-														new IdUse(getIdDecl().getID()))));
-
 		return decl;
 	}
 
