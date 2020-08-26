@@ -105,6 +105,8 @@ aspect MetaGrammar {
 				stream.println("package " + config().packageName() + ";\n");
 			}
 
+			Set<String> superClassNames = new TreeSet<String>();
+
 			stream.println("public class PatternGrammarInfo {");
 			stream.println("public static String getNodeSuperType(String nodeType) {");
 			stream.println("  switch (nodeType) {");
@@ -113,6 +115,7 @@ aspect MetaGrammar {
 				ASTDecl astD = (ASTDecl) d;
 				if (!astD.hasSuperClass())
 					continue;
+				superClassNames.add(astD.getSuperClassName());
 				stream.println(String.format("  case \"%s\": return \"%s\";", astD.getIdDecl().getID(), astD.getSuperClassName()));
 			}
 			stream.println("}");
@@ -128,7 +131,64 @@ aspect MetaGrammar {
 			}
 			stream.println(");");
 			stream.println("}");
+
+			stream.println();
+			stream.println("public static java.util.Set<String> getNonFinalNodeTypes() {");
+			stream.println("return new java.util.TreeSet<String>(java.util.Arrays.asList(");
+			{
+				boolean first = true;
+				for (String s : superClassNames) {
+					if (!first)
+						stream.println(",");
+					else
+						first = false;
+					stream.print(String.format("\"%s\"", s));
+				}
+			}
+			stream.println("));");
 			stream.println("}");
+
+			stream.println();
+
+			stream.println("public static String childNodeType(String c, int i) {");
+			stream.println("  switch (c) {");
+			for (int i = 0; i < getNumTypeDecl(); ++i) {
+				ASTDecl decl = (ASTDecl) getTypeDecl(i);
+				stream.println(String.format("    case \"%s\": {", decl.getIdDecl().getID()));
+				stream.print("      String[] types = {");
+				boolean first = true;
+				for (Component c : decl.components()) {
+					if (c instanceof AggregateComponent) {
+						if (!first) {
+							stream.print(", ");
+						}
+						stream.print("\"" + ((AggregateComponent) c).getId().type() + "\"");
+						first = false;
+					} else if (c instanceof OptionalComponent) {
+						if (!first) {
+							stream.print(", ");
+						}
+						// stream.print("\"" + ((OptionalComponent) c).getId().type() + "\"");
+						stream.print("\"Opt\"");
+						first = false;
+					} else if (c instanceof ListComponent) {
+						if (!first) {
+							stream.print(", ");
+						}
+						// stream.print("\"" + ((ListComponent) c).getId().type() + "\"");
+						stream.print("\"List\"");
+						first = false;
+					}
+				}
+				stream.println("}; ");
+				stream.println("      return types[i];");
+				stream.println("  }");
+			}
+			stream.println("  }");
+			stream.println("  return null;");
+			stream.println("}");
+			stream.println("}");
+
 		} catch (FileNotFoundException f) {
 			System.err.println("Could not create file " + file.getName() + " in " + file.getParent());
 			System.exit(1);
