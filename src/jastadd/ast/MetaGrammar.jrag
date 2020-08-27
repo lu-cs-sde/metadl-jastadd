@@ -168,15 +168,15 @@ aspect MetaGrammar {
 						if (!first) {
 							stream.print(", ");
 						}
-						// stream.print("\"" + ((OptionalComponent) c).getId().type() + "\"");
-						stream.print("\"Opt\"");
+						stream.print("\"" + ((OptionalComponent) c).getId().type() + "\"");
+						// stream.print("\"Opt\"");
 						first = false;
 					} else if (c instanceof ListComponent) {
 						if (!first) {
 							stream.print(", ");
 						}
-						// stream.print("\"" + ((ListComponent) c).getId().type() + "\"");
-						stream.print("\"List\"");
+						stream.print("\"" + ((ListComponent) c).getId().type() + "\"");
+						// stream.print("\"List\"");
 						first = false;
 					}
 				}
